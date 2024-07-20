@@ -1,13 +1,15 @@
-import TelegramBot from "node-telegram-bot-api";
-import dotenv from "dotenv";
-import ShowManitorings from "./ReportService";
-import { Mainmenu, returnMenu, notifmenu } from "./Menu";
-import Scheduling from "../models/schedulingSchema";
-import Report from "../models/reportSchema";
-import { configEmailService, sendEmail } from "./EmailService";
-import setupSchedules from "./producer";
-import { addSchedule,deleteSchedule,scheduledJobs,startConsumers } from "./consumer";
+import TelegramBot from 'node-telegram-bot-api';
+import dotenv from 'dotenv';
+import ShowManitorings from './ReportService';
+import { Mainmenu, returnMenu, notifmenu } from './Menu';
+import Scheduling from '../models/schedulingSchema';
+import Report from '../models/reportSchema';
+import { configEmailService, sendEmail } from './EmailService';
+import setupSchedules from './producer';
+import { addSchedule, deleteSchedule, scheduledJobs, startConsumers } from './consumer';
+
 dotenv.config();
+
 setupSchedules();
 configEmailService();
 
@@ -20,7 +22,7 @@ interface ChatState {
   email?: string;
 }
 
-const token: string | undefined = "6945591609:AAGBMg-LW-hrA77cAz2lp2cSZd1G-mfNI_g";
+const token: string | undefined = process.env.TOKEN!;
 
 const bot: TelegramBot = new TelegramBot(token, { polling: true });
 
@@ -352,4 +354,7 @@ bot.on("callback_query", async (callbackQuery) => {
   }
 });
 scheduledJobs;
+export const sendMessageforServer  = (chatId:number,text:string) =>{
+  bot.sendMessage(chatId,text)
+}
 export default bot;

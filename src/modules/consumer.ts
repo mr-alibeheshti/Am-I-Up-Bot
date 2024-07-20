@@ -3,9 +3,10 @@ import axios from 'axios';
 import { scheduleJob } from 'node-schedule';
 import { sendEmail } from './EmailService';
 import Report from '../models/reportSchema';
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const scheduledJobs = new Map();
-
 export function startConsumers() {
     amqp.connect('amqp://localhost', function (error0, connection) {
       if (error0) {
@@ -37,33 +38,34 @@ export function startConsumers() {
 export async function addSchedule(schedule:any) {
   const job = scheduleJob(`*/${schedule.interval} * * * *`, async () => {
     try {
-      const response = await axios.get(`http://${schedule.domain}`);
+      const axiosInstance = axios.create({
+        timeout: 10000
+      });
+      const response = await axiosInstance.get(`http://${schedule.domain}`);
       const statusCode = response.status;
       if (statusCode !== 200) {
         if (schedule.typeNotification === 'telegram') {
-          if (process.env.IS_TELEGRAM_BOT) {
+          if(process.env.LISTEN_TELEGRAM){
             const bot = await import('./TelegramService');
             bot.default.sendMessage(
               schedule.chatID,
               `⚠️ دامنه ${schedule.domain} در دسترس نیست`
             );
-          }
+          }}
         } else {
           sendEmail(schedule.email, schedule.domain);
-        }
       }
       await handleReport(schedule._id, statusCode, schedule.chatID);
     } catch (error:any) {
       console.error('Error checking domain:', error);
       if (schedule.typeNotification === 'telegram') {
-        if (process.env.IS_TELEGRAM_BOT) {
+        if(process.env.LISTEN_TELEGRAM){
           const bot = await import('./TelegramService');
           bot.default.sendMessage(
             schedule.chatID,
             `⚠️ دامنه ${schedule.domain} در دسترس نیست`
           );
-        }
-      } else {
+        }} else {
         sendEmail(schedule.email, schedule.domain);
       }
       await handleReport(

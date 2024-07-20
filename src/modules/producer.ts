@@ -1,32 +1,29 @@
-import amqp from 'amqplib/callback_api';
+import amqp from 'amqplib';
 import Scheduling from '../models/schedulingSchema';
 
-export const setupSchedules = async () => {
+const setupSchedules = async () => {
   try {
     const schedules = await Scheduling.find({});
-    amqp.connect('amqp://localhost', function(error0, connection) {
-      if (error0) {
-        throw error0;
-      }
-      connection.createChannel(function(error1, channel) {
-        if (error1) {
-          throw error1;
-        }
-        const queue = 'schedule_queue';
 
-        channel.assertQueue(queue, {
-          durable: true
-        });
+    const connection = await amqp.connect('amqp://localhost');
+    const channel = await connection.createChannel();
 
-        schedules.forEach(schedule => {
-          const msg = JSON.stringify(schedule);
-          channel.sendToQueue(queue, Buffer.from(msg), {
-            persistent: true
-          });
-          console.log(" [x] Sent %s", msg);
-        });
-      });
+    const queue = 'schedule_queue';
+
+    await channel.assertQueue(queue, {
+      durable: true
     });
+
+    for (const schedule of schedules) {
+      const msg = JSON.stringify(schedule);
+      await channel.sendToQueue(queue, Buffer.from(msg), {
+        persistent: true
+      });
+      console.log(" [x] Sent %s", msg);
+    }
+
+    await channel.close();
+    await connection.close();
   } catch (error) {
     console.error('Error publishing schedules:', error);
   }
