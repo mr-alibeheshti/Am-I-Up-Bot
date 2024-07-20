@@ -1,7 +1,7 @@
 
 import { startConsumers } from "./consumer";
 
-if (process.env.IS_TELEGRAM_BOT) {
+if (process.env.LISTEN_TELEGRAM) {
   const bot = require('./TelegramService');
 }
 

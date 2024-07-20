@@ -5,7 +5,7 @@ import { Mainmenu, returnMenu, notifmenu } from './Menu';
 import Scheduling from '../models/schedulingSchema';
 import Report from '../models/reportSchema';
 import { configEmailService, sendEmail } from './EmailService';
-import setupSchedules from './producer';
+import setupSchedules from './producer'; 
 import { addSchedule, deleteSchedule, scheduledJobs, startConsumers } from './consumer';
 
 dotenv.config();
@@ -22,7 +22,7 @@ interface ChatState {
   email?: string;
 }
 
-const token: string | undefined = process.env.TOKEN!;
+const token: string | undefined = "6945591609:AAGBMg-LW-hrA77cAz2lp2cSZd1G-mfNI_g";
 
 const bot: TelegramBot = new TelegramBot(token, { polling: true });
 
